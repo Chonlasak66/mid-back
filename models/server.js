@@ -5,7 +5,7 @@ const path = require("path");
 class Server {
   constructor() {
     this.app = express();
-    this.port = process.env.PORT || 8080;
+    this.port = process.env.PORT || 3008;
     this.paths = {
       auth: "/api/auth",
       homepage: "/api/homepage",

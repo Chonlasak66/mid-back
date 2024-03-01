@@ -11,9 +11,9 @@ var dbconfig = {
         //connectionLimit : 10,
         host: 'localhost',
         port: '3306',
-        user: 'dbuser',
+        user: 'dbuser66',
         password: 'P@ssw0rd@2023',
-        database: 'moviedb'
+        database: 'user66008_db'
     }
 };
 module.exports = dbconfig;
