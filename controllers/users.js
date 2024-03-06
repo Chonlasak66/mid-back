@@ -1,135 +1,74 @@
-const fetch = require("cross-fetch");
-const { response } = require("express");
+const express = require('express');
 const axios = require('axios');
+const path = require('path'); 
+const mysql = require('mysql');
+const bodyParser = require('body-parser');
 
-let mysql = require('mysql');
 const env = require('../env.js');
 const config = require('../dbconfig.js')[env];
 
 const connection = mysql.createConnection({
-    host: config.host,
-    user: config.user,
-    password: config.password,
-    database: config.database
+  host: config.host,
+  user: config.user,
+  password: config.password,
+  database: config.database
 })
 connection.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MySQL:', err);
-    } else {
-        console.log('Connected to MySQL');
-    }
+  if (err) {
+      console.error('Error connecting to MySQL:', err);
+  } else {
+      console.log('Connected to MySQL');
+  }
 });
 
 console.log('Running Environment: ' + env);
 
-const users = async (req, res = response) => {
+const app = express();
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
-    try {
-        /*
-            axios.get('https://randomuser.me/api/?page=1&results=10')
-                .then(response => {
-                    res.send(response.data);
-                    res.json(response.data);
-        
-                 });
-        */
-        const resp = await fetch(
-            `https://randomuser.me/api/?page=1&results=10`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
 
-        if (resp.status >= 400) {
-            throw new Error("Bad response from server");
-        }
+app.get('/users', (req, res) => {
+    axios.get('https://randomuser.me/api/?page=1&results=10')
+        .then(response => {
+            res.send(response.data);
+         });
+});
 
-        //const { data = [] } = await resp.json();
-        const data = await resp.json();
-        //console.log("Users1: "+data);
-
-        res.json(data);
-
-    } catch (err) {
-        console.error(err);
-    }
-
-};
-
-const saveuser = async (req, res) => {
-    const userData = req.body;
-    console.log(userData);
-
-    res.status(200).json(await saveUserData(userData));
-
-};
+app.post('/saveuser', (req, res) => {
+  const userData = req.body;
+  console.log(userData);
+  saveUserData(userData);
+});
 
 // ฟังก์ชันสำหรับบันทึกข้อมูลผู้ใช้ในฐานข้อมูล
 function saveUserData(userData) {
-    const { gender, name, location, email, login, picture, dob } = userData;
-    const { title, first, last } = name;
-    const { country } = location;
-    const { username, password, md5, sha1, sha256, uuid } = login;
-    const { medium, large, thumbnail } = picture;
-    const dateOfBirth = new Date(dob.date).toISOString().slice(0, 19).replace('T', ' '); // แปลงรูปแบบของวันเกิด
+  const { gender, name, location, email, login, picture ,dob} = userData;
+  const { title, first, last } = name;
+  const { country } = location;
+  const { username, password, md5, sha1, sha256, uuid } = login;
+  const { medium, large, thumbnail } = picture;
+  const dateOfBirth = new Date(dob.date).toISOString().slice(0, 19).replace('T', ' '); // แปลงรูปแบบของวันเกิด
 
-    console.log("saveUserData(userData): " + userData);
+  console.log(userData);
 
-    /*
-    //สำหรับ database: 'user66007_db'
-      const sql = `INSERT INTO users (name_title, name_first, name_last, email, username, password, picture_large, date_of_birth) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`; //ต้องเพิ่ม column ให้ครบตามที่กำหนดไว้
-    
-      let values = [title, first, last, email, username, password, large, dateOfBirth];
-    */
+  // const sql = `INSERT INTO users (gender, title, first, last, country,dob, uuid, email, username, password, picture_large, picture_medium, picture_thumbnail) 
+  //              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = 'INSERT INTO users SET ?';
+  const values = {gender, title, first, last, country,dob:dateOfBirth, uuid, email, username, password, md5, sha1, sha256, picture_large:large, picture_medium:medium, picture_thumbnail:thumbnail};
 
-    const sql = `INSERT INTO users (gender, title, first, last, country,dob, uuid, email, username, password, picture_large, picture_medium, picture_thumbnail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    const values = {gender, title, first, last, country,dob:dateOfBirth, uuid, email, username, password, md5, sha1, sha256, picture_large:large, picture_medium:medium, picture_thumbnail:thumbnail};
-    let sql_res;
-
-    return new Promise((resolve, reject) => {
-
-        connection.query(sql, values, (error, results, fields) => {
-            if (error) {
-                //return console.error('Error saving user data:', error.message);
-
-                console.log("error: " + JSON.stringify(error))
-                connection.end();
-
-                return resolve({
-                    error: true,
-                    statusCode: 404,
-                    returnCode: 0,
-                    errMessage: error.code + ':' + error.sqlMessage
-                });
-
-            }
-            else
-                if (results.affectedRows > 0) {
-
-                    console.log('User data saved successfully!');
-                    console.log("results: " + JSON.stringify(results))
-                    //connection.end();
-
-                    return resolve({
-                        error: false,
-                        statusCode: 200,
-                        returnCode: 1,
-                        messsage: 'User was inserted',
-                    });
-
-                }
-
-        });
-
-    });
-
+  connection.query(sql, values, (error, results, fields) => {
+    if (error) {
+      return console.error('Error saving user data:', error.message);
+    }
+    console.log('User data saved successfully!');
+  });
 }
 
-module.exports = {
-    users, saveuser,
-};
+
+app.listen(3008, () => {
+    console.log('Server started on port 3008');
+});
