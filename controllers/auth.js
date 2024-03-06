@@ -11,7 +11,7 @@ const login = async (req, res = response) => {
 
   let dbcon = mysql.createConnection(config);
 
-  const [userDetails] = "SELECT * FROM users where email = '" + [email] + "'";
+  const userDetails = "SELECT * FROM users where email = '" + email + "'";
   console.log(userDetails);
 
   dbcon.query(userDetails, function (err, user) {
