@@ -21,22 +21,22 @@ class Server {
   middlewares() {
     this.app.use(cors());
     this.app.use(express.json());
-
+/*
     // Pick up React index.html file
     this.app.use(
       express.static(path.join(__dirname, "../../client/build"))
     );
+    */
   }
 
   // Bind controllers to routes
   routes() {
     this.app.use(this.paths.auth, require("../routes/auth"));
     this.app.use(this.paths.homepage, require("../routes/homepage"));
+    this.app.use(this.paths.users, require("../routes/users"));
     // Catch all requests that don't match any route
     this.app.get("*", (req, res) => {
-      res.sendFile(
-        path.join(__dirname, "../../client/build/index.html")
-      );
+      res.send("<h1>Hello, This is API Back-end008.</h1>");
     });
   }
 
