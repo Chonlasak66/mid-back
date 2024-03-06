@@ -34,7 +34,7 @@ class Server {
   routes() {
     this.app.use(this.paths.auth, require("../routes/auth"));
     this.app.use(this.paths.homepage, require("../routes/homepage"));
-    this.app.use(this.paths.users, require("http://user66008.se-rmutl.net/api/auth/login"));
+    this.app.use(this.paths.users, require("http://user66008.se-rmutl.net"));
     // Catch all requests that don't match any route
     this.app.get("*", (req, res) => {
       res.send("<h1>Hello, This is API Back-end008.</h1>");
