@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+module.exports = router;
 
 // validationResult: extracts the validation errors from a request and makes them available in a Result object.
 const validateInput = ( req, res, next ) => { 
