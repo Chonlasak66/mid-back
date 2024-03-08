@@ -13,7 +13,7 @@ var dbconfig = {
       port: "3306",
       user: "dbuser66",
       password: "P@ssw0rd",
-      database: "user66031_db",
+      database: "user66008_db",
     },
   };
   module.exports = dbconfig;
